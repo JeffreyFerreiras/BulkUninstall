@@ -1,0 +1,1 @@
+icacls "*" /grant Everyone:(OI)(CI)F /T
