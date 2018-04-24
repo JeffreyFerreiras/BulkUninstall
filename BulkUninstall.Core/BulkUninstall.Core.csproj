@@ -43,8 +43,9 @@
   <ItemGroup>
     <Compile Include="IUninstaller.cs" />
     <Compile Include="Models\Software.cs" />
+    <Compile Include="Models\Win32_Product_Software.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ManagementObjectUninstaller.cs" />
+    <Compile Include="Win32_Product_ManagementObjectUninstaller.cs" />
     <Compile Include="UninstallerFactory.cs" />
   </ItemGroup>
   <ItemGroup>

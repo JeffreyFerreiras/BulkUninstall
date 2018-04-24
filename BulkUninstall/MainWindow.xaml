@@ -17,7 +17,6 @@
     </Window.Resources>
 
     <Grid>
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200pt"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -28,27 +27,27 @@
                      BorderThickness="5"
                      Text="Filter"
                      Margin="5"
-                     TextChanged="FilterTxtBox_TextChanged"/>
+                     TextChanged="FilterTxtBox_TextChanged" />
 
             <Button Content="Remove"
                     Name="RemoveBtn"
                     Grid.Column="0"
-                    Click="RemoveBtn_Click"/>
+                    Click="RemoveBtn_Click" />
         </StackPanel>
 
-        <ScrollViewer Grid.Column="1">
-            <ListView Name="ListViewSoftware" Margin="3">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Name}"
-                                        Header="Software"></GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding InstalledDate}"
-                                        Header="Install Date"></GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding Version}"
-                                        Header="Version"></GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </ScrollViewer>
+        <ListView Name="ListViewSoftware"
+                  Margin="3"
+                  Grid.Column="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}"
+                                    Header="Software"></GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding InstalledDate}"
+                                    Header="Install Date"></GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Version}"
+                                    Header="Version"></GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>

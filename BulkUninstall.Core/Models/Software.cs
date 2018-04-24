@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BulkUninstall.Core.Models
 {
-    public class Software
+    public abstract class Software
     {
         public string Name { get; set; }
 
@@ -15,5 +16,9 @@ namespace BulkUninstall.Core.Models
         public string Version { get; set; }
 
         public string ID { get; set; }
+
+        internal ManagementObject ManagementObj { get; set; }
+
+        internal abstract void Uninstall();
     }
 }

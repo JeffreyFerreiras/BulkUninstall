@@ -10,7 +10,7 @@ namespace BulkUninstall.Core
     {
         public static IUninstaller Create()
         {
-            return new ManagementObjectUninstaller();
+            return new Win32_Product_ManagementObjectUninstaller();
         }
     }
 }

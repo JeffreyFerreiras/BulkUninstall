@@ -11,14 +11,17 @@ using Tools.Extensions.Conversion;
 
 namespace BulkUninstall.Core
 {
-    internal class ManagementObjectUninstaller : IUninstaller
+    internal class Win32_Product_ManagementObjectUninstaller : IUninstaller
     {
         List<ManagementObject> _managementObjects;
         List<Software> _programs;
 
         public void Uninstall(IEnumerable<Software> programs)
         {
-            throw new NotImplementedException();
+            foreach (Software program in programs)
+            {
+                program.Uninstall();
+            }
         }
 
         public IEnumerable<Software> GetInstalledSoftware()
@@ -28,7 +31,7 @@ namespace BulkUninstall.Core
                 return _programs;
             }
 
-            _managementObjects = GetManagementObjects();
+            _managementObjects = GetManagementObjects("SELECT * FROM Win32_Product");
             _programs = GetProgramsFrom(_managementObjects);
 
             return _programs;
@@ -40,11 +43,12 @@ namespace BulkUninstall.Core
 
             foreach(ManagementObject mo in managementObjects)
             {
-                programs.Add(new Software
+                programs.Add(new Win32_Product_Software
                 {
-                    Name = mo["DisplayName"] as string,
+                    Name = mo["Name"] as string,
                     Version = mo["Version"] as string,
                     InstalledDate = GetDateTime(mo["InstallDate"]),
+                    ManagementObj = mo
                 });
             }
 
@@ -56,17 +60,16 @@ namespace BulkUninstall.Core
             try
             {
                 int dateNum = date.ToInt32();
-                DateTime dt = dateNum.ToDateTime();
 
-                return dt;
+                return dateNum.ToDateTime();
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }
         }
 
-        private List<ManagementObject> GetManagementObjects(string query = "SELECT * FROM Win32reg_AddRemovePrograms")
+        private List<ManagementObject> GetManagementObjects(string query)
         {
             var searcher = new ManagementObjectSearcher(query);
             var moCollection = searcher.Get();
