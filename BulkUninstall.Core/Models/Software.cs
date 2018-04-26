@@ -9,13 +9,13 @@ namespace BulkUninstall.Core.Models
 {
     public abstract class Software
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public DateTime? InstalledDate { get; set; }
+        public DateTime? InstalledDate { get; set; } = null;
 
-        public string Version { get; set; }
+        public string Version { get; set; } = string.Empty;
 
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
 
         internal ManagementObject ManagementObj { get; set; }
 

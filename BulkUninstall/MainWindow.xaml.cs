@@ -43,6 +43,7 @@ namespace BulkUninstall
 
             foreach (Software program in uninstallItems)
             {
+                if (program.Name == null) continue;
                 if (lookUp.ContainsKey(program.Name))
                 {
                     lookUp[program.Name].Add(program);
@@ -81,6 +82,8 @@ namespace BulkUninstall
                 return; //constructor not run yet, exit.
             }
 
+            await Task.Delay(1000);
+
             TextBox changed = (TextBox)e.Source;
 
             string filter = changed.Text?.Trim();
@@ -95,16 +98,16 @@ namespace BulkUninstall
 
             RefreshItemSource();
 
-            await Task.Delay(1000); //wait a second for them to finish typing...
+            //await Task.Delay(3*1000); //wait a second for them to finish typing...
         }
 
         private string[] FindMatching(string filter)
         {
             var results = new List<string>();
 
-            foreach(var set in _lookupKeyNames)
+            foreach(string set in _lookupKeyNames)
             {
-                if (set.Contains(filter))
+                if (set.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                 {
                     results.Add(set);
                 }
