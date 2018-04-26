@@ -87,33 +87,45 @@ namespace BulkUninstall
             TextBox changed = (TextBox)e.Source;
 
             string filter = changed.Text?.Trim();
-            string[] filtered = FindMatching(filter);
-            
-            _filteredResults.Clear();
 
-            foreach(string found in filtered)
+            if(_lookupKeyNames.Count() > 100)
             {
-                _filteredResults.AddRange(_lookup[found]);
+                SetMatchingParallel(filter);
             }
-
+            else
+            {
+                SetMatching(filter);
+            }
+            
             RefreshItemSource();
 
             //await Task.Delay(3*1000); //wait a second for them to finish typing...
         }
 
-        private string[] FindMatching(string filter)
+        private void SetMatching(string filter)
         {
-            var results = new List<string>();
+            _filteredResults.Clear();
 
-            foreach(string set in _lookupKeyNames)
+            foreach (string match in _lookupKeyNames)
             {
-                if (set.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                if (match.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    results.Add(set);
+                    _filteredResults.AddRange(_lookup[match]);
                 }
             }
+        }
 
-            return results.ToArray();
+        private void SetMatchingParallel(string filter)
+        {
+            _filteredResults.Clear();
+
+            Parallel.ForEach(_lookupKeyNames, (x) =>
+            {
+                if (x.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    _filteredResults.AddRange(_lookup[x]);
+                }
+            });
         }
 
         private void RefreshItemSource()
