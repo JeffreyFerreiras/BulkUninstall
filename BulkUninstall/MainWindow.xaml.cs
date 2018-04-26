@@ -1,8 +1,8 @@
 ﻿using BulkUninstall.Core;
 using BulkUninstall.Core.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +19,8 @@ namespace BulkUninstall
         private IUninstaller _unistaller;
         private List<Software> _uninstallItems;
         private List<Software> _filteredResults;
-        private Dictionary<string, List<Software>> _lookup;
+
+        private ConcurrentDictionary<string, List<Software>> _lookup;
 
         private string[] _lookupKeyNames;
 
@@ -37,20 +38,21 @@ namespace BulkUninstall
             ListViewSoftware.ItemsSource = _uninstallItems;
         }
 
-        private Dictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
+        private ConcurrentDictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
         {
-            var lookUp = new Dictionary<string, List<Software>>();
+            var lookUp = new ConcurrentDictionary<string, List<Software>>();
 
             foreach (Software program in uninstallItems)
             {
                 if (program.Name == null) continue;
+
                 if (lookUp.ContainsKey(program.Name))
                 {
                     lookUp[program.Name].Add(program);
                 }
                 else
                 {
-                    lookUp.Add(program.Name, new List<Software> { program});
+                    lookUp.TryAdd(program.Name, new List<Software> { program });
                 }
             }
 
@@ -82,13 +84,15 @@ namespace BulkUninstall
                 return; //constructor not run yet, exit.
             }
 
-            await Task.Delay(1000);
+            await Task.Delay(1000);//wait a second for them to finish typing...
 
             TextBox changed = (TextBox)e.Source;
 
             string filter = changed.Text?.Trim();
 
-            if(_lookupKeyNames.Count() > 100)
+            _filteredResults.Clear();
+
+            if (_lookupKeyNames.Count() > 100)
             {
                 SetMatchingParallel(filter);
             }
@@ -96,16 +100,12 @@ namespace BulkUninstall
             {
                 SetMatching(filter);
             }
-            
-            RefreshItemSource();
 
-            //await Task.Delay(3*1000); //wait a second for them to finish typing...
+            RefreshItemSource();
         }
 
         private void SetMatching(string filter)
         {
-            _filteredResults.Clear();
-
             foreach (string match in _lookupKeyNames)
             {
                 if (match.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
@@ -117,15 +117,20 @@ namespace BulkUninstall
 
         private void SetMatchingParallel(string filter)
         {
-            _filteredResults.Clear();
+            var filteredResultsConcurrent = new ConcurrentBag<Software>();
 
             Parallel.ForEach(_lookupKeyNames, (x) =>
             {
                 if (x.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    _filteredResults.AddRange(_lookup[x]);
+                    foreach (var prog in _lookup[x])
+                    {
+                        filteredResultsConcurrent.Add(prog);
+                    }
                 }
             });
+
+            _filteredResults = filteredResultsConcurrent.OrderBy(x => x.Name).ToList();
         }
 
         private void RefreshItemSource()
