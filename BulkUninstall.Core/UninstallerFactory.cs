@@ -8,15 +8,17 @@ namespace BulkUninstall.Core
 {
     public class UninstallerFactory
     {
-        /*
-         * In a windows 10 environment all applications appear to be registered.
-         * For windows 10, use class Win32_Product_ManagementObjectUninstaller
-         * Needs more conclusive research.
-         */
-        public static IUninstaller Create()
+        public static IUninstaller Create(UninstallEngine uninstallEngine = UninstallEngine.Registry)
         {
-            //return new Registry_Uninstaller();
-            return new Win32_Product_ManagementObjectUninstaller();
+            switch (uninstallEngine)
+            {
+                case UninstallEngine.Registry:
+                    return new RegistryUninstaller();
+                case UninstallEngine.Win32_Product:
+                    return new Win32_Product_ManagementObjectUninstaller();
+                default:
+                    throw new InvalidOperationException("No uninstall engine chosen");
+            }
         }
     }
 }

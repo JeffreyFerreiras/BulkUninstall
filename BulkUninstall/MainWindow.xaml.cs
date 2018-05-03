@@ -38,6 +38,11 @@ namespace BulkUninstall
             ListViewSoftware.ItemsSource = _uninstallItems;
         }
 
+        void SetGridView()
+        {
+            ListViewSoftware.View.GetValue();
+        }
+
         private ConcurrentDictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
         {
             var lookUp = new ConcurrentDictionary<string, List<Software>>();

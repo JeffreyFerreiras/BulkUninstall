@@ -48,7 +48,7 @@ namespace BulkUninstall.Core
                 {
                     Name = mo["Name"] as string,
                     Version = mo["Version"] as string,
-                    InstalledDate = GetDateTime(mo["InstallDate"]),
+                    InstalledDate = Helper.GetDateTime(mo["InstallDate"]),
                     ManagementObj = mo
                 });
             }
@@ -56,19 +56,6 @@ namespace BulkUninstall.Core
             return programs;
         }
 
-        private DateTime? GetDateTime(object date)
-        {
-            try
-            {
-                int dateNum = date.ToInt32();
-
-                return dateNum.ToDateTime();
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         private List<ManagementObject> GetManagementObjects(string query)
         {

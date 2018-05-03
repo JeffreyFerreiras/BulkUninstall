@@ -9,12 +9,12 @@ using BulkUninstall.Core;
 namespace BulkUninstallTests.UnitTests
 {
     [TestFixture]
-    public class UninstallerTests
+    public class Win32_Product_UninstallerTests
     {
 
         IUninstaller Factory()
         {
-            return UninstallerFactory.Create();
+            return UninstallerFactory.Create(UninstallEngine.Win32_Product);
         }
 
         [Test]

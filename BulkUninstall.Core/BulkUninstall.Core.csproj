@@ -110,12 +110,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BulkUninstallEnums.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="IUninstaller.cs" />
     <Compile Include="Models\RegistrySoftware.cs" />
     <Compile Include="Models\Software.cs" />
     <Compile Include="Models\Win32_Product_Software.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Registry_Uninstaller.cs" />
+    <Compile Include="RegistryUninstaller.cs" />
     <Compile Include="Win32_Product_ManagementObjectUninstaller.cs" />
     <Compile Include="UninstallerFactory.cs" />
   </ItemGroup>
