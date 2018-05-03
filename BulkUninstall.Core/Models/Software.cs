@@ -17,8 +17,6 @@ namespace BulkUninstall.Core.Models
 
         public string ID { get; set; } = string.Empty;
 
-        internal ManagementObject ManagementObj { get; set; }
-
         internal abstract void Uninstall();
     }
 }

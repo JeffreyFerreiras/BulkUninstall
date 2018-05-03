@@ -81,38 +81,36 @@ namespace BulkUninstall
         {
             if (_filteredResults == null)
             {
-                return; //constructor not run yet, exit.
+                return; //constructor did not run yet, exit.
             }
 
-            await Task.Delay(1000);//wait a second for them to finish typing...
+            await Task.Delay(1000);//wait a second for typing...
 
             TextBox changed = (TextBox)e.Source;
 
-            string filter = changed.Text?.Trim();
-
-            _filteredResults.Clear();
-
-            if (_lookupKeyNames.Count() > 100)
-            {
-                SetMatchingParallel(filter);
-            }
-            else
-            {
-                SetMatching(filter);
-            }
-
-            RefreshItemSource();
+            SetMatching(changed.Text?.Trim());
         }
 
         private void SetMatching(string filter)
         {
-            foreach (string match in _lookupKeyNames)
+            _filteredResults.Clear();
+
+            if (_lookupKeyNames.Count() > 100)
             {
-                if (match.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                foreach (string match in _lookupKeyNames)
                 {
-                    _filteredResults.AddRange(_lookup[match]);
+                    if (match.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        _filteredResults.AddRange(_lookup[match]);
+                    }
                 }
             }
+            else //use concurrent algorithm
+            {
+                SetMatchingParallel(filter);
+            }
+
+            RefreshItemSource();
         }
 
         private void SetMatchingParallel(string filter)
@@ -123,9 +121,9 @@ namespace BulkUninstall
             {
                 if (x.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    foreach (var prog in _lookup[x])
+                    foreach (Software program in _lookup[x])
                     {
-                        filteredResultsConcurrent.Add(prog);
+                        filteredResultsConcurrent.Add(program);
                     }
                 }
             });

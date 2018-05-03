@@ -10,6 +10,7 @@ namespace BulkUninstall.Core
     public interface IUninstaller
     {
         IEnumerable<Software> GetInstalledSoftware();
+
         void Uninstall(IEnumerable<Software> programs);
     }
 }
