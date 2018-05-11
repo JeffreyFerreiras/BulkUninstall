@@ -19,9 +19,7 @@ namespace BulkUninstall
         private IUninstaller _unistaller;
         private List<Software> _uninstallItems;
         private List<Software> _filteredResults;
-
         private ConcurrentDictionary<string, List<Software>> _lookup;
-
         private string[] _lookupKeyNames;
 
         public MainWindow()
@@ -36,11 +34,6 @@ namespace BulkUninstall
             _lookupKeyNames = _lookup.Keys.ToArray();
 
             ListViewSoftware.ItemsSource = _uninstallItems;
-        }
-
-        void SetGridView()
-        {
-            ListViewSoftware.View.GetValue();
         }
 
         private ConcurrentDictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
@@ -100,7 +93,13 @@ namespace BulkUninstall
         {
             _filteredResults.Clear();
 
-            if (_lookupKeyNames.Count() > 100)
+
+            /*  
+             *  if the amont of items is less than 200, simply loop through the items with a normal loop.
+             *  if the amount is greater than 200, use a parrallel algorithm to improve response time.
+             */
+
+            if (_lookupKeyNames.Count() < 200)
             {
                 foreach (string match in _lookupKeyNames)
                 {
@@ -110,9 +109,9 @@ namespace BulkUninstall
                     }
                 }
             }
-            else //use concurrent algorithm
+            else 
             {
-                SetMatchingParallel(filter);
+                SetMatchingParallel(filter); //use concurrent algorithm
             }
 
             RefreshItemSource();
