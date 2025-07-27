@@ -23,16 +23,16 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0">
-            <TextBox Name="FilterTxtBox"
+            <TextBox Name="FilterTextBox"
                      BorderThickness="5"
                      Text="Filter"
                      Margin="5"
-                     TextChanged="FilterTxtBox_TextChanged" />
+                     TextChanged="FilterTextBox_TextChanged" />
 
             <Button Content="Remove"
-                    Name="RemoveBtn"
+                    Name="RemoveButton"
                     Grid.Column="0"
-                    Click="RemoveBtn_Click" />
+                    Click="RemoveButton_Click" />
         </StackPanel>
 
         <ListView Name="ListViewSoftware"

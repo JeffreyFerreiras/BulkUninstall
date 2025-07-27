@@ -16,7 +16,7 @@ namespace BulkUninstall
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IUninstaller _unistaller;
+        private IUninstaller _uninstaller;
         private List<Software> _uninstallItems;
         private List<Software> _filteredResults;
         private ConcurrentDictionary<string, List<Software>> _lookup;
@@ -26,9 +26,9 @@ namespace BulkUninstall
         {
             InitializeComponent();
 
-            _unistaller = UninstallerFactory.Create();
+            _uninstaller = UninstallerFactory.Create();
 
-            _uninstallItems = _unistaller.GetInstalledSoftware().OrderBy(x => x.Name).ToList();
+            _uninstallItems = _uninstaller.GetInstalledSoftware().OrderBy(x => x.Name).ToList();
             _filteredResults = new List<Software>();
             _lookup = GetDictionary(_uninstallItems);
             _lookupKeyNames = _lookup.Keys.ToArray();
@@ -38,32 +38,32 @@ namespace BulkUninstall
 
         private ConcurrentDictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
         {
-            var lookUp = new ConcurrentDictionary<string, List<Software>>();
+            var lookup = new ConcurrentDictionary<string, List<Software>>();
 
             foreach (Software program in uninstallItems)
             {
                 if (program.Name == null) continue;
 
-                if (lookUp.ContainsKey(program.Name))
+                if (lookup.ContainsKey(program.Name))
                 {
-                    lookUp[program.Name].Add(program);
+                    lookup[program.Name].Add(program);
                 }
                 else
                 {
-                    lookUp.TryAdd(program.Name, new List<Software> { program });
+                    lookup.TryAdd(program.Name, new List<Software> { program });
                 }
             }
 
-            return lookUp;
+            return lookup;
         }
 
-        private void RemoveBtn_Click(object sender, RoutedEventArgs e)
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_unistaller.IsValid())
+            if (_uninstaller.IsValid())
             {
                 var selected = ListViewSoftware.SelectedItems.Cast<Software>();
 
-                _unistaller.Uninstall(selected);
+                _uninstaller.Uninstall(selected);
 
                 foreach (Software program in selected)
                 {
@@ -75,7 +75,7 @@ namespace BulkUninstall
             }
         }
 
-        private async void FilterTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_filteredResults == null)
             {
@@ -84,9 +84,9 @@ namespace BulkUninstall
 
             await Task.Delay(1000);//wait a second for typing...
 
-            TextBox changed = (TextBox)e.Source;
+            TextBox textBox = (TextBox)e.Source;
 
-            SetMatching(changed.Text?.Trim());
+            SetMatching(textBox.Text?.Trim());
         }
 
         private void SetMatching(string filter)
@@ -95,8 +95,8 @@ namespace BulkUninstall
 
 
             /*  
-             *  if the amont of items is less than 200, simply loop through the items with a normal loop.
-             *  if the amount is greater than 200, use a parrallel algorithm to improve response time.
+             *  if the amount of items is less than 200, simply loop through the items with a normal loop.
+             *  if the amount is greater than 200, use a parallel algorithm to improve response time.
              */
 
             if (_lookupKeyNames.Count() < 200)
