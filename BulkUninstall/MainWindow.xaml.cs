@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Tools.Extensions.Validation;
 
 namespace BulkUninstall
 {
@@ -16,129 +15,120 @@ namespace BulkUninstall
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IUninstaller _unistaller;
-        private List<Software> _uninstallItems;
-        private List<Software> _filteredResults;
-        private ConcurrentDictionary<string, List<Software>> _lookup;
-        private string[] _lookupKeyNames;
+        private IUninstaller _uninstaller;
+        private List<Software> _installedSoftware;
+        private List<Software> _filteredSoftware;
+        private ConcurrentDictionary<string, List<Software>> _softwareLookup;
+        private string[] _softwareNames;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _unistaller = UninstallerFactory.Create();
+            _uninstaller = UninstallerFactory.Create();
 
-            _uninstallItems = _unistaller.GetInstalledSoftware().OrderBy(x => x.Name).ToList();
-            _filteredResults = new List<Software>();
-            _lookup = GetDictionary(_uninstallItems);
-            _lookupKeyNames = _lookup.Keys.ToArray();
+            _installedSoftware = _uninstaller.GetInstalledSoftware().OrderBy(s => s.Name).ToList();
+            _filteredSoftware = new List<Software>();
+            _softwareLookup = BuildSoftwareLookup(_installedSoftware);
+            _softwareNames = _softwareLookup.Keys.ToArray();
 
-            ListViewSoftware.ItemsSource = _uninstallItems;
+            ListViewSoftware.ItemsSource = _installedSoftware;
         }
 
-        private ConcurrentDictionary<string, List<Software>> GetDictionary(List<Software> uninstallItems)
+        private ConcurrentDictionary<string, List<Software>> BuildSoftwareLookup(List<Software> installedSoftware)
         {
-            var lookUp = new ConcurrentDictionary<string, List<Software>>();
+            var softwareLookup = new ConcurrentDictionary<string, List<Software>>();
 
-            foreach (Software program in uninstallItems)
+            foreach (var software in installedSoftware)
             {
-                if (program.Name == null) continue;
+                if (software.Name == null) continue;
 
-                if (lookUp.ContainsKey(program.Name))
+                if (softwareLookup.ContainsKey(software.Name))
                 {
-                    lookUp[program.Name].Add(program);
+                    softwareLookup[software.Name].Add(software);
                 }
                 else
                 {
-                    lookUp.TryAdd(program.Name, new List<Software> { program });
+                    softwareLookup.TryAdd(software.Name, new List<Software> { software });
                 }
             }
 
-            return lookUp;
+            return softwareLookup;
         }
 
-        private void RemoveBtn_Click(object sender, RoutedEventArgs e)
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_unistaller.IsValid())
+            if (_uninstaller.IsValid())
             {
-                var selected = ListViewSoftware.SelectedItems.Cast<Software>();
+                var selectedSoftware = ListViewSoftware.SelectedItems.Cast<Software>().ToList();
 
-                _unistaller.Uninstall(selected);
+                _uninstaller.Uninstall(selectedSoftware);
 
-                foreach (Software program in selected)
+                foreach (var software in selectedSoftware)
                 {
-                    _uninstallItems.Remove(program);
-                    _filteredResults.Remove(program);
+                    _installedSoftware.Remove(software);
+                    _filteredSoftware.Remove(software);
                 }
 
-                RefreshItemSource();
+                RefreshSoftwareListView();
             }
         }
 
-        private async void FilterTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_filteredResults == null)
-            {
-                return; //constructor did not run yet, exit.
-            }
+            if (_filteredSoftware == null)
+                return;
 
-            await Task.Delay(1000);//wait a second for typing...
+            await Task.Delay(1000); // Wait for typing...
 
-            TextBox changed = (TextBox)e.Source;
-
-            SetMatching(changed.Text?.Trim());
+            var textBox = (TextBox)e.Source;
+            ApplyFilter(textBox.Text?.Trim());
         }
 
-        private void SetMatching(string filter)
+        private void ApplyFilter(string filter)
         {
-            _filteredResults.Clear();
+            _filteredSoftware.Clear();
 
-
-            /*  
-             *  if the amont of items is less than 200, simply loop through the items with a normal loop.
-             *  if the amount is greater than 200, use a parrallel algorithm to improve response time.
-             */
-
-            if (_lookupKeyNames.Count() < 200)
+            if (_softwareNames.Length < 200)
             {
-                foreach (string match in _lookupKeyNames)
+                foreach (var name in _softwareNames)
                 {
-                    if (match.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                    if (name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                     {
-                        _filteredResults.AddRange(_lookup[match]);
+                        _filteredSoftware.AddRange(_softwareLookup[name]);
                     }
                 }
             }
-            else 
+            else
             {
-                SetMatchingParallel(filter); //use concurrent algorithm
+                ApplyFilterParallel(filter);
             }
 
-            RefreshItemSource();
+            RefreshSoftwareListView();
         }
 
-        private void SetMatchingParallel(string filter)
+        private void ApplyFilterParallel(string filter)
         {
-            var filteredResultsConcurrent = new ConcurrentBag<Software>();
+            var concurrentFilteredSoftware = new ConcurrentBag<Software>();
 
-            Parallel.ForEach(_lookupKeyNames, (x) =>
+            Parallel.ForEach(_softwareNames, name =>
             {
-                if (x.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
+                if (name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) > -1)
                 {
-                    foreach (Software program in _lookup[x])
+                    foreach (var software in _softwareLookup[name])
                     {
-                        filteredResultsConcurrent.Add(program);
+                        concurrentFilteredSoftware.Add(software);
                     }
                 }
             });
 
-            _filteredResults = filteredResultsConcurrent.OrderBy(x => x.Name).ToList();
+            _filteredSoftware = concurrentFilteredSoftware.OrderBy(s => s.Name).ToList();
         }
 
-        private void RefreshItemSource()
+        private void RefreshSoftwareListView()
         {
-            ListViewSoftware.ItemsSource = null; //Item source won't refresh unless the value changes.
-            ListViewSoftware.ItemsSource = _filteredResults;
+            ListViewSoftware.ItemsSource = null; // Force refresh
+            ListViewSoftware.ItemsSource = _filteredSoftware;
         }
     }
 }
