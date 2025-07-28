@@ -56,7 +56,7 @@ namespace BulkUninstall
             return softwareLookup;
         }
 
-        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        private void RemoveBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_uninstaller.IsValid())
             {
@@ -74,7 +74,7 @@ namespace BulkUninstall
             }
         }
 
-        private async void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void FilterTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_filteredSoftware == null)
                 return;
